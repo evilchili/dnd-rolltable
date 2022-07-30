@@ -1,143 +1,135 @@
 import yaml
 import random
 from collections.abc import Generator
-from typing import Optional, Mapping, List
+from typing import Optional, Mapping, List, IO
 
 
 class RollTable:
     """
     Generate a roll table using weighted distributions of random options.
-    Given source.yaml containing options such as:
 
-        option1:
-            - key1: description
-            - key2: description
-            ...
-        ...
+    Instance Attributes:
 
-    Generate a random table:
+    data        - The parsed source data, minus any metadata
+    die         - the size of the die for which to create a table (default: 20)
+    frequencies - frequency distribution applied when selecting random values
+    headers     - array of column headers (default: do not print headers)
+                  (default: uniform across all options)
+    rows        - An array of table rows derived from the values
+    values      - An array of randomly-selected values for each die roll
 
-        >>> print(RollTable(path='source.yaml'))
-        d1    option6    key3   description
-        d2    option2    key2   description
-        d3    option3    key4   description
-        ...
+    Instance Methods:
 
-    You can customize the frequency distribution, headers, and table size by
-    defining metadata in your source file.
-
-    Using Metadata:
-
-    By default options are given uniform distribution and random keys will be
-    selected from each option with equal probability. This behaviour can be
-    changed by adding an optional metadata section to the source file:
-
-        metadata:
-          frequenceis:
-            default:
-              option1: 0.5
-              option2: 0.1
-              option3: 0.3
-              option4: 0.1
-
-    This will guarantee that random keys from option1 are selected 50% of the
-    time, from option 2 10% of the time, and so forth. Frequencies should add
-    up to 1.0.
-
-    If the metadata section includes 'frequencies', The 'default' distribution
-    must be defined. Additional optional distributions may also be defined, if
-    you want to provide alternatives for specific use cases.
-
-        metadata:
-          frequenceis:
-            default:
-              option1: 0.5
-              option2: 0.1
-              option3: 0.3
-              option4: 0.1
-            inverted:
-              option1: 0.1
-              option2: 0.3
-              option3: 0.1
-              option4: 0.5
-
-    A specific frequency distribution can be specifed by passing the 'frequency'
-    parameter at instantiation:
-
-        >>> t = RollTable('source.yaml', frequency='inverted')
-
-    The metadata section can also override the default size of die to use for
-    the table (a d20). For example, this creates a 100-row table:
-
-        metadata:
-          die: 100
-
-    This too can be overridden at instantiation:
-
-        >>> t = RollTable('source.yaml', die=64)
-
-    Finally, headers for your table columns can also be defined in metadata:
-
-        metadata:
-          headers:
-              - Roll
-              - Frequency
-              - Description
-              - Effect
-
-     This will yield output similar to:
-
-        >>> print(RollTable(path='source.yaml'))
-        Roll  Category   Name   Effect
-        d1    option6    key3   description
-        d2    option2    key2   description
-        d3    option3    key4   description
-        ...
+    load_source - Read and parse the source. Will be called automatically when necessary.
     """
 
-    def __init__(self, path: str, frequency: str = 'default',
-                 die: Optional[int] = None, collapsed: bool = True):
+    def __init__(self, source: IO, frequency: str = 'default',
+                 die: Optional[int] = 20, collapsed: bool = True):
         """
         Initialize a RollTable instance.
 
         Args:
-            path        - the path to the source file
+            source      - an IO object to read source from
             frequency   - the name of the frequency distribution to use; must
                           be defined in the source file's metadata.
             die         - specify a die size
             collapsed   - If True, collapse multiple die values with the same
                           options into a single line.
         """
-        self._path = path
         self._frequency = frequency
         self._die = die
         self._collapsed = collapsed
-        self._metadata = None
-        self._source = None
+        self._headers = None
+        self._frequencies = None
+        self._source = source
+        self._data = None
         self._values = None
+        self._rows = None
 
-    def _load_source(self) -> None:
+    @property
+    def frequencies(self):
+        if not self._data:
+            self.load_source()
+        return self._frequencies
+
+    @property
+    def data(self) -> Mapping:
+        if not self._data:
+            self.load_source()
+        return self._data
+
+    @property
+    def die(self) -> int:
+        return self._die
+
+    @property
+    def headers(self) -> List:
+        if not self._data:
+            self.load_source()
+        return self._headers
+
+    @property
+    def values(self) -> List:
+        if not self._values:
+            weights = []
+            options = []
+            for (option, weight) in self.frequencies.items():
+                weights.append(weight)
+                options.append(option)
+            freqs = random.choices(options, weights=weights, k=self.die)
+            self._values = []
+            for option in freqs:
+                self._values += [(option, random.choice(self.data[option]))]
+            if hasattr(self._values[0][1], 'keys'):
+                self._values = sorted(self._values, key=lambda val: list(val[1].keys())[0])
+            else:
+                self._values = sorted(self._values)
+        return self._values
+
+    @property
+    def rows(self) -> List:
+        if not self._rows:
+            rows = []
+            if self.headers:
+                rows.append(self.headers)
+            if self._collapsed:
+                for line in self._collapsed_rows():
+                    rows.append(line)
+            else:
+                for (i, item) in enumerate(self.values):
+                    (cat, option) = item
+                    if hasattr(option, 'items'):
+                        (k, v) = list(option.items())[0]
+                        rows.append([f'd{i+1}', cat, k, v])
+                    else:
+                        rows.append([f'd{i+1}', cat, option])
+            self._rows = rows
+        return self._rows
+
+    def load_source(self) -> None:
         """
-        Cache the yaml source and parsed or generated the metadata.
+        Cache the yaml source and the parsed or generated metadata.
         """
-        if self._source:
+        if self._data:
             return
-        with open(self._path, 'r') as source:
-            self._source = yaml.safe_load(source)
 
-        def _defaults():
-            num_keys = len(self._source.keys())
-            default_freq = num_keys/100
-            return {
-                'headers': [''] * num_keys,
-                'die': self._die,
-                'frequencies': {
-                    'default': [(k, default_freq) for k in self._source.keys()]
-                }
-            }
-        self._metadata = self._source.pop('metadata', _defaults())
+        self._data = yaml.safe_load(self._source)
+        metadata = self._data.pop('metadata', {})
 
-    def _collapsed_lines(self) -> Generator[list]:
+        num_keys = len(self._data.keys())
+        default_freq = num_keys / 100
+
+        if 'headers' in metadata:
+            self._headers = metadata['headers']
+
+        frequencies = {
+            'default': dict([(k, default_freq) for k in self._data.keys()])
+        }
+        if 'frequencies' in metadata:
+            frequencies.update(**metadata['frequencies'])
+        self._frequencies = frequencies[self._frequency]
+
+    def _collapsed_rows(self) -> Generator[list]:
         """
         Generate an array of column values for each row of the table but
         sort the values and squash multiple rows with the same values into one,
@@ -152,7 +144,11 @@ class RollTable:
         """
         def collapsed(last_val, offset, val, i):
             (cat, option) = last_val
-            (k, v) = list(*option.items())
+            if hasattr(option, 'items'):
+                (k, v) = list(*option.items())
+            else:
+                k = option
+                v = ''
             if offset + 1 == i:
                 return [f'd{i}', cat, k, v]
             else:
@@ -171,72 +167,13 @@ class RollTable:
                 offset = i
         yield collapsed(last_val, offset, val, i+1)
 
-    @property
-    def freqtable(self):
-        return self.metadata['frequencies'][self._frequency]
-
-    @property
-    def source(self) -> Mapping:
+    def __repr__(self) -> str:
         """
-        The parsed source data
+        Return the rows as a single string.
         """
-        if not self._source:
-            self._load_source()
-        return self._source
-
-    @property
-    def metadata(self) -> Mapping:
-        """
-        The parsed or generated metadata
-        """
-        if not self._metadata:
-            self._load_source()
-        return self._metadata
-
-    @property
-    def values(self) -> List:
-        """
-        Randomly pick values from the source data following the frequency
-        distrubtion of the options.
-        """
-        if not self._values:
-            weights = []
-            options = []
-            for (option, weight) in self.freqtable.items():
-                weights.append(weight)
-                options.append(option)
-            freqs = random.choices(options, weights=weights,
-                                   k=self._die or self.metadata['die'])
-            self._values = []
-            for option in freqs:
-                self._values += [(option, random.choice(self.source[option]))]
-            self._values = sorted(self._values,
-                                  key=lambda val: list(val[1].keys())[0])
-        return self._values
-
-    @property
-    def lines(self) -> Generator[List]:
-        """
-        Yield a list of table rows suitable for formatting as output.
-        """
-        yield self.metadata['headers']
-
-        if self._collapsed:
-            for line in self._collapsed_lines():
-                yield line
-        else:
-            for (i, item) in enumerate(self.values):
-                (cat, option) = item
-                (k, v) = list(option.items())[0]
-                yield [f'd{i+1}', cat, k, v]
-
-    def __str__(self) -> str:
-        """
-        Return the lines as a single string.
-        """
-        return "\n".join([
-            '{:10s}\t{:8s}\t{:20s}\t{:s}'.format(*line) for line in self.lines
-        ])
+        rows = list(self.rows)
+        str_format = '\t'.join(['{:s}'] * len(rows[0]))
+        return "\n".join([str_format.format(*row) for row in rows])
 
 
 if __name__ == '__main__':

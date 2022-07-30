@@ -1,0 +1,16 @@
+[tool.poetry]
+name = 'dnd-rolltable'
+version = '0.9'
+license = 'The Unlicense'
+authors = ['Greg Boyington <evilchili@gmail.com>']
+description = 'Generate roll tables using weighted random distributions'
+packages = [
+   { include = 'rolltable' }
+]
+
+[tool.poetry.dependencies]
+python = '^3.6'
+
+[build-system]
+requires = ['poetry-core~=1.0']
+build-backend = 'poetry.core.masonry.api'

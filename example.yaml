@@ -1,0 +1,37 @@
+# example.yaml
+# 
+# This is an annotated example source file for generating random roll tables.
+#
+# metadata is optional
+metadata:
+  # headers are optional
+  headers:
+    # The first column header always applies to the frequency label;
+    # you can hide this (or any other column) by setting the header to null
+    - Rarity  
+    - Color      
+    - Notes
+  # frequencies are optional; by default distribution will be uniform
+  frequencies:
+    # multiple distributions may be specified besides 'default'
+    default:
+      common: 0.5
+      uncommon: 0.3
+      rare: 0.15
+      wondrous: 0.05
+# 'common' is the text label for the frequency distribution
+common:
+  # each time a 'common' value is selected for the table, it will be
+  # chosen at random from the following values
+  - red
+  - orange
+  - yellow
+uncommon:
+  - green
+  - blue
+rare:
+  - indigo
+  - violet
+wondrous:
+  # choices can be definitions; both key and the value will be added as columns
+  - octarine: the color of magic

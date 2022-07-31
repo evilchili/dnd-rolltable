@@ -46,6 +46,10 @@ option 1:
 """
 
 fixture_no_descriptions = """
+metadata:
+    headers:
+        - option
+        - choice
 option 1:
     -  choice 1
 """
@@ -80,45 +84,41 @@ B3:
 
 
 def test_combined_tables():
-    tA = tables.RollTable(fixture_combined_A)
-    tB = tables.RollTable(fixture_combined_B)
-
-    combined = tables.CombinedTable(tables=[tA, tB], die=6)
-    assert 'A1' in str(combined)
-    assert 'B1' in str(combined)
+    combined = tables.RollTable([fixture_combined_A, fixture_combined_B], die=6)
+    assert str(combined)
 
 
 def test_table_end_to_end():
-    assert str(tables.RollTable(fixture_source))
+    assert str(tables.RollTable([fixture_source]))
 
 
 def test_table_end_to_end_with_metadata():
-    assert str(tables.RollTable(fixture_metadata + fixture_source))
+    assert str(tables.RollTable([fixture_metadata + fixture_source]))
 
 
 def test_table_frequency():
-    t = tables.RollTable(fixture_metadata + fixture_source, frequency='nondefault')
-    assert t.frequencies['Option 1'] == 0.0
-    assert t.frequencies['Option 2'] == 0.1
-    assert t.frequencies['Option 3'] == 0.9
+    t = tables.RollTable([fixture_metadata + fixture_source], frequency='nondefault')
+    assert t._data[0].frequencies['Option 1'] == 0.0
+    assert t._data[0].frequencies['Option 2'] == 0.1
+    assert t._data[0].frequencies['Option 3'] == 0.9
 
 
 def test_one_option():
-    t = tables.RollTable(fixture_one_choice, die=1)
-    assert t.values == [('option 1', {'choice 1': 'description 1'})]
+    t = tables.RollTable([fixture_one_choice], die=1)
+    assert t._values == [['option 1', 'choice 1', 'description 1']]
 
 
 def test_collapsed():
-    t = tables.RollTable(fixture_repeated_choices, die=6, collapsed=True)
-    assert len(list(t.rows)) == 1
+    t = tables.RollTable([fixture_repeated_choices], die=6)
+    assert len(list(t.rows)) == 2  # (+1 for headers)
 
 
 def test_not_collapsed():
-    t = tables.RollTable(fixture_repeated_choices, die=6, collapsed=False)
-    assert len(list(t.rows)) == 6
+    t = tables.RollTable([fixture_repeated_choices], die=6)
+    assert len(list(t.expanded_rows)) == 7  # (+1 for headers)
 
 
 def test_no_descriptions():
-    t = tables.RollTable(fixture_no_descriptions, die=1)
+    t = tables.RollTable([fixture_no_descriptions], die=1)
     assert 'd1' in str(t)
     assert 'option 1' in str(t)

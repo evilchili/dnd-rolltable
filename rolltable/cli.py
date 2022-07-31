@@ -2,6 +2,8 @@ from rolltable import tables
 import typer
 from rich import print
 from rich.table import Table
+from pathlib import Path
+from typing import List
 
 
 app = typer.Typer()
@@ -9,28 +11,28 @@ app = typer.Typer()
 
 @app.command("roll-table")
 def create(
-    source: str = typer.Argument(
+    sources: List[Path] = typer.Argument(
         ...,
-        help="Path to the yaml-formatted source file."),
+        help="Path to one or more yaml-formatted source file."),
     frequency: str = typer.Option(
         'default',
         help='use the specified frequency from the source file'),
     die: int = typer.Option(
         20,
         help='The size of the die for which to create a table'),
-    collapse: bool = typer.Option(
+    collapsed: bool = typer.Option(
         True,
         help='If True, collapse multiple die values with the same option.')
 ):
     """
     CLI for creating roll tables.
     """
-    with open(source, 'r') as src:
-        rt = tables.RollTable(source=src, frequency=frequency, die=die,
-                              collapsed=collapse)
-        rt.load_source()
-    table = Table(*rt.rows[0])
-    for row in rt.rows[1:]:
+
+    rt = tables.RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die)
+
+    rows = rt.rows if collapsed else rt.expanded_rows
+    table = Table(*rows[0])
+    for row in rows[1:]:
         table.add_row(*row)
     print(table)
 

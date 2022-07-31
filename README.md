@@ -27,6 +27,38 @@ Invoke the CLI:
 └─────────┴──────────┴──────────┴────────────────────┘
 ```
 
+### Command-Line Help
+```
+% poetry run roll-table --help
+
+ Usage: roll-table [OPTIONS] SOURCES...
+
+ CLI for creating roll tables.
+
+╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    sources      SOURCES...  Path to one or more yaml-formatted source file. [default: None] [required]          │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --frequency                               TEXT                             use the specified frequency from the   │
+│                                                                            source file                            │
+│                                                                            [default: default]                     │
+│ --die                                     INTEGER                          The size of the die for which to       │
+│                                                                            create a table                         │
+│                                                                            [default: 20]                          │
+│ --collapsed             --no-collapsed                                     If True, collapse multiple die values  │
+│                                                                            with the same option.                  │
+│                                                                            [default: collapsed]                   │
+│ --install-completion                      [bash|zsh|fish|powershell|pwsh]  Install completion for the specified   │
+│                                                                            shell.                                 │
+│                                                                            [default: None]                        │
+│ --show-completion                         [bash|zsh|fish|powershell|pwsh]  Show completion for the specified      │
+│                                                                            shell, to copy it or customize the     │
+│                                                                            installation.                          │
+│                                                                            [default: None]                        │
+│ --help                                                                     Show this message and exit.            │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
 ### Library Use
  
 ```

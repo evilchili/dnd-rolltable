@@ -27,6 +27,8 @@ Invoke the CLI:
 └─────────┴──────────┴──────────┴────────────────────┘
 ```
 
+Run ```poetry run roll-table --help``` for details.
+
 ### Library Use
  
 ```

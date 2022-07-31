@@ -50,6 +50,43 @@ option 1:
     -  choice 1
 """
 
+fixture_combined_A = """
+A1:
+  - A choice 1
+  - A choice 2
+  - A choice 3
+A2:
+  - A choice 4
+  - A choice 5
+  - A choice 6
+A3:
+  - A choice 7
+  - A choice 8
+  - A choice 9
+"""
+
+fixture_combined_B = """
+metadata:
+    headers:
+        - HeaderB
+        - HeaderB_Choice
+B1:
+  - B choice 1
+B2:
+  - B choice 2
+B3:
+  - B choice 3
+"""
+
+
+def test_combined_tables():
+    tA = tables.RollTable(fixture_combined_A)
+    tB = tables.RollTable(fixture_combined_B)
+
+    combined = tables.CombinedTable(tables=[tA, tB], die=6)
+    assert 'A1' in str(combined)
+    assert 'B1' in str(combined)
+
 
 def test_table_end_to_end():
     assert str(tables.RollTable(fixture_source))

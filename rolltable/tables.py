@@ -91,7 +91,7 @@ class RollTable:
         if not self._rows:
             rows = []
             if self.headers:
-                rows.append(self.headers)
+                rows.append(['Roll'] + self.headers)
             if self._collapsed:
                 for line in self._collapsed_rows():
                     rows.append(line)
@@ -172,8 +172,53 @@ class RollTable:
         Return the rows as a single string.
         """
         rows = list(self.rows)
-        str_format = '\t'.join(['{:s}'] * len(rows[0]))
+        str_format = '\t'.join(['{:10s}'] * len(rows[0]))
         return "\n".join([str_format.format(*row) for row in rows])
+
+
+class CombinedTable(RollTable):
+    """
+    Create a table that is a union of other tables.
+    """
+
+    def __init__(self, tables: List[str], die: Optional[int] = 20):
+        self._die = die
+        self._tables = tables
+        self._rows = None
+        self._headers = None
+
+        # reset any cached values
+        for t in self._tables:
+            t._rows = None
+            t._values = None
+            t._collapsed = False
+            t._die = self._die
+
+    @property
+    def tables(self) -> List:
+        return self._tables
+
+    @property
+    def rows(self) -> List:
+        """
+        Compute the rows of the table by concatenating the rows of the individual tables.
+        """
+        if not self._rows:
+
+            # if one table has headers, they must all have them, so fill with empty strings.
+            if sum([1 for t in self.tables if t.headers]) < len(self.tables):
+                for t in self.tables:
+                    if not t.headers:
+                        t._headers = ['.'] * len(t.values[0])
+
+            self._rows = []
+            for i in range(self._die):
+                row = [self.tables[0].rows[i][0]]
+                for x in range(len(self.tables)):
+                    for col in self.tables[x].rows[i][1:]:
+                        row.append(col)
+                self._rows.append(row)
+        return self._rows
 
 
 if __name__ == '__main__':

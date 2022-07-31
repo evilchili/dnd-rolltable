@@ -13,6 +13,7 @@ python = "^3.7"
 typer = "latest"
 rich = "latest"
 pyyaml = "latest"
+pytest = "latest"
 
 
 [tool.poetry.scripts]

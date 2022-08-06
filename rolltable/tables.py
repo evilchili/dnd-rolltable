@@ -113,7 +113,7 @@ class RollTable:
                 freqs = random.choices(options, weights=weights, k=self.die)
                 values = []
                 for option in freqs:
-                    choice = random.choice(ds.data[option])
+                    choice = random.choice(ds.data[option]) if ds.data[option] else ''
                     if hasattr(choice, 'keys'):
                         c = [option]
                         for (k, v) in choice.items():

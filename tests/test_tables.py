@@ -82,6 +82,16 @@ B3:
   - B choice 3
 """
 
+fixture_no_options = """
+metadata:
+    headers:
+        - headerA
+        - headerB
+B1:
+B2:
+B3:
+"""
+
 
 def test_combined_tables():
     combined = tables.RollTable([fixture_combined_A, fixture_combined_B], die=6)
@@ -125,5 +135,5 @@ def test_no_descriptions():
 
 
 def test_yaml():
-    t = tables.RollTable([fixture_metadata + fixture_source])
+    t = tables.RollTable([fixture_no_options])
     print(t.as_yaml)

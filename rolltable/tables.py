@@ -163,6 +163,19 @@ class RollTable:
             self._rows.append(self._column_filter([f'd{face+1}'] + row))
         return self._rows
 
+    @property
+    def as_markdown(self) -> str:
+        return ''
+
+    @property
+    def as_yaml(self) -> dict:
+        struct = [{'headers': self.rows[0]}]
+        for row in self.rows[1:]:
+            struct.append({
+                row[0]: row[1:]
+            })
+        return yaml.dump(struct)
+
     def _config(self):
         """
         Parse data sources, generate headers, and create the column filters

@@ -122,3 +122,8 @@ def test_no_descriptions():
     t = tables.RollTable([fixture_no_descriptions], die=1)
     assert 'd1' in str(t)
     assert 'option 1' in str(t)
+
+
+def test_yaml():
+    t = tables.RollTable([fixture_metadata + fixture_source])
+    print(t.as_yaml)

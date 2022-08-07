@@ -22,13 +22,20 @@ def create(
         help='The size of the die for which to create a table'),
     collapsed: bool = typer.Option(
         True,
-        help='If True, collapse multiple die values with the same option.')
+        help='If True, collapse multiple die values with the same option.'),
+    yaml: bool = typer.Option(
+        False,
+        help='Render output as yaml.')
 ):
     """
     CLI for creating roll tables.
     """
 
     rt = tables.RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die)
+
+    if yaml:
+        print(rt.as_yaml)
+        return
 
     rows = rt.rows if collapsed else rt.expanded_rows
     table = Table(*rows[0])

@@ -113,7 +113,10 @@ class RollTable:
                 freqs = random.choices(options, weights=weights, k=self.die)
                 values = []
                 for option in freqs:
-                    choice = random.choice(ds.data[option]) if ds.data[option] else ''
+                    if not ds.data[option]:
+                        values.append([option])
+                        continue
+                    choice = random.choice(ds.data[option])
                     if hasattr(choice, 'keys'):
                         c = [option]
                         for (k, v) in choice.items():
@@ -169,11 +172,9 @@ class RollTable:
 
     @property
     def as_yaml(self) -> dict:
-        struct = [{'headers': self.rows[0]}]
+        struct = {'headers': self.rows[0]}
         for row in self.rows[1:]:
-            struct.append({
-                row[0]: row[1:]
-            })
+            struct[row[0]] = row[1:]
         return yaml.dump(struct)
 
     def _config(self):

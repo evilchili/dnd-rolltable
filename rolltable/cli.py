@@ -34,7 +34,7 @@ def create(
     rt = tables.RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die)
 
     if yaml:
-        print(rt.as_yaml)
+        print(rt.as_yaml())
         return
 
     rows = rt.rows if collapsed else rt.expanded_rows

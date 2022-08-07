@@ -93,6 +93,14 @@ class RollTable:
         self._generated_values = None
         self._config()
 
+    def as_yaml(self, expanded=False) -> dict:
+        struct = {}
+        for row in self.rows[1:]:
+            struct[row[0]] = {}
+            for idx, col in enumerate(row[1:]):
+                struct[row[0]][self.headers[idx]] = col
+        return yaml.dump(struct)
+
     @property
     def die(self) -> int:
         return self._die
@@ -169,13 +177,6 @@ class RollTable:
     @property
     def as_markdown(self) -> str:
         return ''
-
-    @property
-    def as_yaml(self) -> dict:
-        struct = {'headers': self.rows[0]}
-        for row in self.rows[1:]:
-            struct[row[0]] = row[1:]
-        return yaml.dump(struct)
 
     def _config(self):
         """

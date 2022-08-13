@@ -102,7 +102,7 @@ class RollTable:
             cols = row[1:] + [''] * (len(self.headers) - len(row[1:]))
             for idx, col in enumerate(cols):
                 struct[row[0]][self.headers[idx] if idx < len(self.headers) else '_'] = col
-        return yaml.dump(struct)
+        return yaml.dump(struct, sort_keys=False)
 
     @property
     def die(self) -> int:

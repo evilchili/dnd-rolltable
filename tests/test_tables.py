@@ -92,6 +92,28 @@ B2:
 B3:
 """
 
+fixture_lists = """
+#
+# one  two  three  four
+# foo  bar  baz    quz
+#
+metadata:
+  headers:
+    - one
+    - two
+    - three
+    - four
+foo:
+  - bar:
+    - baz
+    - quz
+"""
+
+
+def test_lists():
+    t = tables.RollTable([fixture_lists], die=1)
+    assert str(t)
+
 
 def test_combined_tables():
     combined = tables.RollTable([fixture_combined_A, fixture_combined_B], die=6)
@@ -134,6 +156,13 @@ def test_no_descriptions():
     assert 'option 1' in str(t)
 
 
-def test_yaml():
+def test_no_options():
     t = tables.RollTable([fixture_no_options])
-    print(t.as_yaml)
+    assert str(t)
+
+
+def test_yaml():
+    assert tables.RollTable([fixture_no_options]).as_yaml()
+    assert tables.RollTable([fixture_one_choice]).as_yaml()
+    assert tables.RollTable([fixture_metadata + fixture_source]).as_yaml()
+    assert tables.RollTable([fixture_source]).as_yaml()

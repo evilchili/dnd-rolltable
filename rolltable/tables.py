@@ -1,5 +1,6 @@
 import yaml
 import random
+from collections.abc import Iterable
 from typing import Optional, List, IO
 
 
@@ -97,8 +98,10 @@ class RollTable:
         struct = {}
         for row in self.rows[1:]:
             struct[row[0]] = {}
-            for idx, col in enumerate(row[1:]):
-                struct[row[0]][self.headers[idx]] = col
+            # pad rows with empty cols as necessary
+            cols = row[1:] + [''] * (len(self.headers) - len(row[1:]))
+            for idx, col in enumerate(cols):
+                struct[row[0]][self.headers[idx] if idx < len(self.headers) else '_'] = col
         return yaml.dump(struct)
 
     @property
@@ -147,8 +150,9 @@ class RollTable:
     @property
     def rows(self) -> List:
         def formatted(lastrow, offset, row, i):
-            fmt = f'd{i}' if offset + 1 == i else f'd{offset+1}-d{i}'
-            return self._column_filter([fmt] + lastrow)
+            thisrow = [f'd{i}' if offset + 1 == i else f'd{offset+1}-d{i}']
+            thisrow += self._flatten(lastrow)
+            return self._column_filter(thisrow)
 
         lastrow = None
         offset = 0
@@ -203,9 +207,19 @@ class RollTable:
                 self._header_excludes.append(i+1)  # +1 to account for the 'Roll' column
 
     def _column_filter(self, row):
-        return [col for (pos, col) in enumerate(row) if pos not in self._header_excludes]
+        cols = [col for (pos, col) in enumerate(row) if pos not in self._header_excludes]
+        # pad the row with empty columns if there are more headers than columns
+        return cols + [''] * (1 + len(self.headers) - len(row))
+
+    def _flatten(self, obj: List) -> List:
+        for member in obj:
+            if isinstance(member, Iterable) and not isinstance(member, (str, bytes)):
+                yield from self._flatten(member)
+            else:
+                yield member
 
     def __repr__(self) -> str:
         rows = list(self.rows)
+        print(rows)
         str_format = '\t'.join(['{:10s}'] * len(rows[0]))
         return "\n".join([str_format.format(*row) for row in rows])

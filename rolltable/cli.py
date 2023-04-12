@@ -1,5 +1,6 @@
 from rolltable import tables
 import typer
+from enum import Enum
 from rich import print
 from rich.table import Table
 from pathlib import Path
@@ -7,6 +8,12 @@ from typing import List
 
 
 app = typer.Typer()
+
+
+class OUTPUT_FORMATS(Enum):
+    text = 'text'
+    yaml = 'yaml'
+    markdown = 'markdown'
 
 
 @app.command("roll-table")
@@ -20,28 +27,37 @@ def create(
     die: int = typer.Option(
         20,
         help='The size of the die for which to create a table'),
+    hide_rolls: bool = typer.Option(
+        False,
+        help='If True, do not show the Roll column.',
+    ),
     collapsed: bool = typer.Option(
         True,
         help='If True, collapse multiple die values with the same option.'),
-    yaml: bool = typer.Option(
-        False,
-        help='Render output as yaml.')
+    width: int = typer.Option(
+        120,
+        help='Width of the table.'),
+    output: OUTPUT_FORMATS = typer.Option(
+        'text',
+        help='The output format to use.',
+    )
 ):
     """
     CLI for creating roll tables.
     """
 
-    rt = tables.RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die)
+    rt = tables.RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die, hide_rolls=hide_rolls)
 
-    if yaml:
+    if output == OUTPUT_FORMATS.yaml:
         print(rt.as_yaml())
-        return
-
-    rows = rt.rows if collapsed else rt.expanded_rows
-    table = Table(*rows[0])
-    for row in rows[1:]:
-        table.add_row(*row)
-    print(table)
+    elif output == OUTPUT_FORMATS.markdown:
+        print(rt.as_markdown)
+    else:
+        rows = rt.rows if collapsed else rt.expanded_rows
+        table = Table(*rows[0], width=width)
+        for row in rows[1:]:
+            table.add_row(*row)
+        print(table)
 
 
 if __name__ == '__main__':

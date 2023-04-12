@@ -1,5 +1,6 @@
 import yaml
 import random
+from csv2md.table import Table
 from collections.abc import Iterable
 from typing import Optional, List, IO
 
@@ -83,10 +84,11 @@ class RollTable:
     """
 
     def __init__(self, sources: List[str], frequency: str = 'default',
-                 die: Optional[int] = 20) -> None:
+                 die: Optional[int] = 20, hide_rolls: bool = False) -> None:
         self._sources = sources
         self._frequency = frequency
         self._die = die
+        self._hide_rolls = hide_rolls
         self._data = None
         self._rows = None
         self._headers = None
@@ -157,6 +159,7 @@ class RollTable:
         lastrow = None
         offset = 0
         self._rows = [self._column_filter(['Roll'] + self.headers)]
+
         for face in range(self._die):
             row = self._values[face]
             if not lastrow:
@@ -180,7 +183,7 @@ class RollTable:
 
     @property
     def as_markdown(self) -> str:
-        return ''
+        return Table(self.rows).markdown()
 
     def _config(self):
         """
@@ -204,12 +207,14 @@ class RollTable:
         self._header_excludes = []
         for i in range(len(self._headers)):
             if self.headers[i] is None:
-                self._header_excludes.append(i+1)  # +1 to account for the 'Roll' column
+                self._header_excludes.append(i)
 
     def _column_filter(self, row):
-        cols = [col for (pos, col) in enumerate(row) if pos not in self._header_excludes]
+        cols = [col or '' for (pos, col) in enumerate(row) if pos not in self._header_excludes]
         # pad the row with empty columns if there are more headers than columns
-        return cols + [''] * (1 + len(self.headers) - len(row))
+        cols = cols + [''] * (1 + len(self.headers) - len(row))
+        # strip the leading column if we're hiding the dice rolls
+        return cols[1:] if self._hide_rolls else cols
 
     def _flatten(self, obj: List) -> List:
         for member in obj:
@@ -220,6 +225,5 @@ class RollTable:
 
     def __repr__(self) -> str:
         rows = list(self.rows)
-        print(rows)
         str_format = '\t'.join(['{:10s}'] * len(rows[0]))
-        return "\n".join([str_format.format(*row) for row in rows])
+        return "\n".join([str_format.format(*[r or '' for r in row]) for row in rows])

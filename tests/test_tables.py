@@ -166,3 +166,10 @@ def test_yaml():
     assert tables.RollTable([fixture_one_choice]).as_yaml()
     assert tables.RollTable([fixture_metadata + fixture_source]).as_yaml()
     assert tables.RollTable([fixture_source]).as_yaml()
+
+
+def test_text():
+    assert repr(tables.RollTable([fixture_no_options]))
+    assert repr(tables.RollTable([fixture_one_choice]))
+    assert repr(tables.RollTable([fixture_metadata + fixture_source]))
+    assert repr(tables.RollTable([fixture_source]))

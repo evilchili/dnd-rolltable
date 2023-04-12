@@ -35,6 +35,7 @@ class DataSource:
         self.headers = []
         self.frequencies = None
         self.data = None
+        self.metadata = None
         self.load_source()
 
     def load_source(self) -> None:
@@ -45,19 +46,19 @@ class DataSource:
             return
 
         self.data = yaml.safe_load(self.source)
-        metadata = self.data.pop('metadata', {})
+        self.metadata = self.data.pop('metadata', {})
 
         num_keys = len(self.data.keys())
         default_freq = num_keys / 100
 
-        if 'headers' in metadata:
-            self.headers = metadata['headers']
+        if 'headers' in self.metadata:
+            self.headers = self.metadata['headers']
 
         frequencies = {
             'default': dict([(k, default_freq) for k in self.data.keys()])
         }
-        if 'frequencies' in metadata:
-            frequencies.update(**metadata['frequencies'])
+        if 'frequencies' in self.metadata:
+            frequencies.update(**self.metadata['frequencies'])
         self.frequencies = frequencies[self.frequency]
 
 
@@ -105,6 +106,10 @@ class RollTable:
             for idx, col in enumerate(cols):
                 struct[row[0]][self.headers[idx] if idx < len(self.headers) else '_'] = col
         return yaml.dump(struct, sort_keys=False)
+
+    @property
+    def datasources(self) -> List:
+        return self._data
 
     @property
     def die(self) -> int:

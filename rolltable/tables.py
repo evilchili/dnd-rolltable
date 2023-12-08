@@ -135,17 +135,23 @@ class RollTable:
                         values.append([option])
                         continue
                     if hasattr(ds.data[option], 'keys'):
-                        rand_key = random.choice(list(ds.data[option].keys()))
-                        choice = [rand_key, *ds.data[option][rand_key]]
+                        k, v = random.choice(list(ds.data[option].items()))
+                        choice = [k] + v
                     else:
                         choice = random.choice(ds.data[option])
                     if hasattr(choice, 'keys'):
                         c = [option]
                         for (k, v) in choice.items():
-                            c.extend([k, v])
+                            if type(v) is list:
+                                c.extend([k, *v])
+                            else:
+                                c.extend([k, v])
                         values.append(c)
                     else:
-                        values.append([option, choice])
+                        if type(choice) is list:
+                            values.append([option, *choice])
+                        else:
+                            values.append([option, choice])
                 return sorted(values)
 
             ds_values = [values_from_datasource(t) for t in self._data]

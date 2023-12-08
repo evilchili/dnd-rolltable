@@ -1,3 +1,5 @@
+import pytest
+
 from rolltable import tables
 
 fixture_metadata = """
@@ -104,7 +106,7 @@ metadata:
     - two
     - three
     - four
-Category:
+list:
   - foo:
       - bar
       - baz
@@ -121,7 +123,7 @@ metadata:
     - two
     - three
     - four
-Category:
+dict:
   foo:
     - bar
     - baz
@@ -133,9 +135,10 @@ Category:
 """]
 
 
-def test_lists_and_dicts():
-    t = tables.RollTable(fixture_lists_and_dicts, die=1)
-    assert str(t)
+@pytest.mark.parametrize('fixture', fixture_lists_and_dicts)
+def test_lists_and_dicts(fixture):
+    t = tables.RollTable([fixture], die=1)
+    assert(str(t))
 
 
 def test_combined_tables():

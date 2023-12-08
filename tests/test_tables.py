@@ -92,26 +92,49 @@ B2:
 B3:
 """
 
-fixture_lists = """
+fixture_lists_and_dicts = ["""
 #
-# one  two  three  four
-# foo  bar  baz    quz
+# category one  two  three  four
+# Category foo  bar  baz    quz
 #
 metadata:
   headers:
+    - category
     - one
     - two
     - three
     - four
-foo:
-  - bar:
+Category:
+  - foo:
+      - bar
+      - baz
+      - quz
+""", """
+#
+# category one  two  three  four
+# Category foo  bar  baz    quz
+#
+metadata:
+  headers:
+    - category
+    - one
+    - two
+    - three
+    - four
+Category:
+  foo:
+    - bar
     - baz
     - quz
-"""
+  bar:
+    - a
+    - b
+    - c
+"""]
 
 
-def test_lists():
-    t = tables.RollTable([fixture_lists], die=1)
+def test_lists_and_dicts():
+    t = tables.RollTable(fixture_lists_and_dicts, die=1)
     assert str(t)
 
 

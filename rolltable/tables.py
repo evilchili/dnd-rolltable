@@ -134,7 +134,11 @@ class RollTable:
                     if not ds.data[option]:
                         values.append([option])
                         continue
-                    choice = random.choice(ds.data[option])
+                    if hasattr(ds.data[option], 'keys'):
+                        rand_key = random.choice(list(ds.data[option].keys()))
+                        choice = [rand_key, *ds.data[option][rand_key]]
+                    else:
+                        choice = random.choice(ds.data[option])
                     if hasattr(choice, 'keys'):
                         c = [option]
                         for (k, v) in choice.items():

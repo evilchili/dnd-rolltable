@@ -2,7 +2,7 @@ import yaml
 import random
 from csv2md.table import Table
 from collections.abc import Iterable
-from typing import Optional, List, IO
+from typing import Optional, List, IO, Union
 
 
 class DataSource:
@@ -90,7 +90,7 @@ class RollTable:
             d2-d4   Bar
     """
 
-    def __init__(self, sources: List[str], frequency: str = 'default',
+    def __init__(self, sources: Union[List[str], List[DataSource]], frequency: str = 'default',
                  die: Optional[int] = 20, hide_rolls: bool = False) -> None:
         self._sources = sources
         self._frequency = frequency
@@ -214,9 +214,12 @@ class RollTable:
         # create the datasource objects
         self._data = []
         for src in self._sources:
-            ds = DataSource(src, frequency=self._frequency)
-            ds.load_source()
-            self._data.append(ds)
+            if type(src) is str:
+                ds = DataSource(src, frequency=self._frequency)
+                ds.load_source()
+                self._data.append(ds)
+            else:
+                self._data.append(src)
 
         # merge the headers
         self._headers = []

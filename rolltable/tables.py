@@ -44,15 +44,21 @@ class DataSource:
         """
         if self.data:
             return
+        self.read_source()
+        self.init_headers()
+        self.init_frequencies()
 
+    def read_source(self) -> None:
         self.data = yaml.safe_load(self.source)
         self.metadata = self.data.pop('metadata', {})
 
-        num_keys = len(self.data.keys())
-        default_freq = num_keys / 100
-
+    def init_headers(self) -> None:
         if 'headers' in self.metadata:
             self.headers = self.metadata['headers']
+
+    def init_frequencies(self) -> None:
+        num_keys = len(self.data.keys())
+        default_freq = num_keys / 100
 
         frequencies = {
             'default': dict([(k, default_freq) for k in self.data.keys()])

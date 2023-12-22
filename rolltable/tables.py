@@ -83,13 +83,13 @@ class DataSource:
         Return a list of random values from the data set, as a list of lists.
         """
         return [
-            self._random_choice_from_option(option) for option in self.random_frequencies(count)
+            self.get_entries(option, rand=True) for option in self.random_frequencies(count)
         ]
 
-    def _random_choice_from_option(self, option: str) -> list:
+    def get_entries(self, option, rand: bool = True) -> list:
         """
-        Select a random item from the specified option in the data source, and return a flattened
-        list of the option, the select item, and the item's value (if any).
+        For a random item or each item in the specified option in the data source,
+        return a flattened list of the option, the select item, and the item's value (if any).
         """
 
         # If there is no data for the specified option, stop now.
@@ -103,33 +103,41 @@ class DataSource:
             #
             #  >>> self.data[option] == {'One': ['bar', 'baz'], 'Two': ['qaz', 'qux']}
             #
-            # choice might then be: ['One', 'bar', 'baz']
+            # choices might then be: ['One', 'bar', 'baz']
             #
-            k, v = random.choice(list(self.data[option].items()))
-            choice = [k] + v
+            if rand:
+                k, v = random.choice(list(self.data[option].items()))
+                choices = [[k] + v]
+            else:
+                choices = [
+                    [k] + v for k, v in list(self.data[option].items())
+                ]
         else:
             # If the option is either a list or a string, just select it.
-            choice = random.choice(self.data[option])
+            if rand:
+                choices = [random.choice(self.data[option])]
+            else:
+                choices = self.data[option]
 
-        # If the randomly-selected choice is a dict, choose a random item and return a list consisting
-        # of the option name, the key, and the value, flattening the # value if it is also a list.
-        if hasattr(choice, 'keys'):
-            for (k, v) in choice.items():
-                if type(v) is list:
-                    flattened.extend([k, *v])
-                else:
-                    flattened.extend([k, v])
-            return flattened
+        for choice in choices:
+            # If the randomly-selected choice is a dict, choose a random item and return a list consisting
+            # of the option name, the key, and the value, flattening the # value if it is also a list.
+            if hasattr(choice, 'keys'):
+                for (k, v) in choice.items():
+                    if type(v) is list:
+                        flattened.extend([k, *v])
+                    else:
+                        flattened.extend([k, v])
+                continue
 
-        # if the member is a list, return the flattened list
-        if type(choice) is list:
-            flattened.extend(choice)
-            return flattened
+            # if the member is a list, return the flattened list
+            if type(choice) is list:
+                flattened.extend(choice)
+                continue
 
-        # otherwise, return a list consisting of option and choice
-        flattened.append(choice)
+            # otherwise, return a list consisting of option and choice
+            flattened.append(choice)
         return flattened
-
 
 class RollTable:
     """

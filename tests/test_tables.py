@@ -187,11 +187,14 @@ def test_no_options():
     assert str(t)
 
 
-def test_yaml():
-    assert tables.RollTable([fixture_no_options]).as_yaml()
-    assert tables.RollTable([fixture_one_choice]).as_yaml()
-    assert tables.RollTable([fixture_metadata + fixture_source]).as_yaml()
-    assert tables.RollTable([fixture_source]).as_yaml()
+@pytest.mark.parametrize('table', [
+    tables.RollTable([fixture_no_options]),
+    tables.RollTable([fixture_one_choice]),
+    tables.RollTable([fixture_metadata + fixture_source]),
+    tables.RollTable([fixture_source]),
+])
+def test_yaml(table):
+    assert table.as_yaml()
 
 
 def test_text():

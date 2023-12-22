@@ -67,6 +67,69 @@ class DataSource:
             frequencies.update(**self.metadata['frequencies'])
         self.frequencies = frequencies[self.frequency]
 
+    def random_frequencies(self, count: int = 1) -> list:
+        """
+        Choose random option names from the frequency table.
+        """
+        weights = []
+        options = []
+        for (option, weight) in self.frequencies.items():
+            weights.append(weight)
+            options.append(option)
+        return random.choices(options, weights=weights, k=count)
+
+    def random_values(self, count: int = 1) -> list:
+        """
+        Return a list of random values from the data set, as a list of lists.
+        """
+        return [
+            self._random_choice_from_option(option) for option in self.random_frequencies(count)
+        ]
+
+    def _random_choice_from_option(self, option: str) -> list:
+        """
+        Select a random item from the specified option in the data source, and return a flattened
+        list of the option, the select item, and the item's value (if any).
+        """
+
+        # If there is no data for the specified option, stop now.
+        flattened = [option]
+        if not self.data[option]:
+            return flattened
+
+        if hasattr(self.data[option], 'keys'):
+            # if the option is a dict, we assume the values are lists; we select a random item
+            # and prepend the key to the value list as our random selection. For example, given:
+            #
+            #  >>> self.data[option] == {'One': ['bar', 'baz'], 'Two': ['qaz', 'qux']}
+            #
+            # choice might then be: ['One', 'bar', 'baz']
+            #
+            k, v = random.choice(list(self.data[option].items()))
+            choice = [k] + v
+        else:
+            # If the option is either a list or a string, just select it.
+            choice = random.choice(self.data[option])
+
+        # If the randomly-selected choice is a dict, choose a random item and return a list consisting
+        # of the option name, the key, and the value, flattening the # value if it is also a list.
+        if hasattr(choice, 'keys'):
+            for (k, v) in choice.items():
+                if type(v) is list:
+                    flattened.extend([k, *v])
+                else:
+                    flattened.extend([k, v])
+            return flattened
+
+        # if the member is a list, return the flattened list
+        if type(choice) is list:
+            flattened.extend(choice)
+            return flattened
+
+        # otherwise, return a list consisting of option and choice
+        flattened.append(choice)
+        return flattened
+
 
 class RollTable:
     """
@@ -128,40 +191,7 @@ class RollTable:
     @property
     def _values(self) -> List:
         if not self._generated_values:
-            def values_from_datasource(ds):
-                weights = []
-                options = []
-                for (option, weight) in ds.frequencies.items():
-                    weights.append(weight)
-                    options.append(option)
-                freqs = random.choices(options, weights=weights, k=self.die)
-                values = []
-                for option in freqs:
-                    if not ds.data[option]:
-                        values.append([option])
-                        continue
-                    if hasattr(ds.data[option], 'keys'):
-                        k, v = random.choice(list(ds.data[option].items()))
-                        choice = [k] + v
-                    else:
-                        choice = random.choice(ds.data[option])
-                    if hasattr(choice, 'keys'):
-                        c = [option]
-                        for (k, v) in choice.items():
-                            if type(v) is list:
-                                c.extend([k, *v])
-                            else:
-                                c.extend([k, v])
-                        values.append(c)
-                    else:
-                        if type(choice) is list:
-                            values.append([option, *choice])
-                        else:
-                            values.append([option, choice])
-                return sorted(values)
-
-            ds_values = [values_from_datasource(t) for t in self._data]
-
+            ds_values = [t.random_values(self.die) for t in self._data]
             self._generated_values = []
             for face in range(self._die):
                 value = []

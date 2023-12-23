@@ -1,4 +1,4 @@
-from rolltable import tables
+from rolltable.types import RollTable
 import typer
 from enum import Enum
 from rich import print
@@ -46,7 +46,7 @@ def create(
     CLI for creating roll tables.
     """
 
-    rt = tables.RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die, hide_rolls=hide_rolls)
+    rt = RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die, hide_rolls=hide_rolls)
 
     if output == OUTPUT_FORMATS.yaml:
         print(rt.as_yaml())

@@ -1,6 +1,6 @@
 import pytest
 
-from rolltable import tables
+from rolltable import types
 
 fixture_metadata = """
 metadata:
@@ -137,80 +137,80 @@ dict:
 
 @pytest.mark.parametrize('fixture', fixture_lists_and_dicts)
 def test_lists_and_dicts(fixture):
-    t = tables.RollTable([fixture], die=1)
+    t = types.RollTable([fixture], die=1)
     assert(str(t))
 
 
 def test_combined_tables():
-    combined = tables.RollTable([fixture_combined_A, fixture_combined_B], die=6)
+    combined = types.RollTable([fixture_combined_A, fixture_combined_B], die=6)
     assert str(combined)
 
 
 def test_table_end_to_end():
-    assert str(tables.RollTable([fixture_source]))
+    assert str(types.RollTable([fixture_source]))
 
 
 def test_table_end_to_end_with_metadata():
-    assert str(tables.RollTable([fixture_metadata + fixture_source]))
+    assert str(types.RollTable([fixture_metadata + fixture_source]))
 
 
 def test_table_frequency():
-    t = tables.RollTable([fixture_metadata + fixture_source], frequency='nondefault')
+    t = types.RollTable([fixture_metadata + fixture_source], frequency='nondefault')
     assert t._data[0].frequencies['Option 1'] == 0.0
     assert t._data[0].frequencies['Option 2'] == 0.1
     assert t._data[0].frequencies['Option 3'] == 0.9
 
 
 def test_one_option():
-    t = tables.RollTable([fixture_one_choice], die=1)
+    t = types.RollTable([fixture_one_choice], die=1)
     assert t._values == [['option 1', 'choice 1', 'description 1']]
 
 
 def test_collapsed():
-    t = tables.RollTable([fixture_repeated_choices], die=6)
+    t = types.RollTable([fixture_repeated_choices], die=6)
     assert len(list(t.rows)) == 2  # (+1 for headers)
 
 
 def test_not_collapsed():
-    t = tables.RollTable([fixture_repeated_choices], die=6)
+    t = types.RollTable([fixture_repeated_choices], die=6)
     assert len(list(t.expanded_rows)) == 7  # (+1 for headers)
 
 
 def test_no_descriptions():
-    t = tables.RollTable([fixture_no_descriptions], die=1)
+    t = types.RollTable([fixture_no_descriptions], die=1)
     assert 'd1' in str(t)
     assert 'option 1' in str(t)
 
 
 def test_no_options():
-    t = tables.RollTable([fixture_no_options])
+    t = types.RollTable([fixture_no_options])
     assert str(t)
 
 
 @pytest.mark.parametrize('table', [
-    tables.RollTable([fixture_no_options]),
-    tables.RollTable([fixture_one_choice]),
-    tables.RollTable([fixture_metadata + fixture_source]),
-    tables.RollTable([fixture_source]),
+    types.RollTable([fixture_no_options]),
+    types.RollTable([fixture_one_choice]),
+    types.RollTable([fixture_metadata + fixture_source]),
+    types.RollTable([fixture_source]),
 ])
 def test_yaml(table):
     assert table.as_yaml()
 
 
 def test_text():
-    assert repr(tables.RollTable([fixture_no_options]))
-    assert repr(tables.RollTable([fixture_one_choice]))
-    assert repr(tables.RollTable([fixture_metadata + fixture_source]))
-    assert repr(tables.RollTable([fixture_source]))
+    assert repr(types.RollTable([fixture_no_options]))
+    assert repr(types.RollTable([fixture_one_choice]))
+    assert repr(types.RollTable([fixture_metadata + fixture_source]))
+    assert repr(types.RollTable([fixture_source]))
 
 
 @pytest.mark.parametrize('table', [
-    tables.RollTable([fixture_no_options]),
-    tables.RollTable([fixture_one_choice]),
-    tables.RollTable([fixture_metadata + fixture_source]),
-    tables.RollTable([fixture_source]),
-    tables.RollTable([fixture_no_options]),
-    tables.RollTable([fixture_lists_and_dicts]),
+    types.RollTable([fixture_no_options]),
+    types.RollTable([fixture_one_choice]),
+    types.RollTable([fixture_metadata + fixture_source]),
+    types.RollTable([fixture_source]),
+    types.RollTable([fixture_no_options]),
+    types.RollTable([fixture_lists_and_dicts]),
 ])
 def test_as_dict(table):
     for src in table.datasources:

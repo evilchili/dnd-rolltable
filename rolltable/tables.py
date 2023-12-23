@@ -93,9 +93,6 @@ class DataSource:
         data = dict()
         for name in self.data.keys():
             entries = self.get_entries(name, rand=False)
-            headers = self.headers
-            for i in range(0, len(self.headers) - len(entries[0])):
-                headers.append(f"{i:3f}")
             items = {(k, v) for k, v in zip(self.headers, entries)}
             data[name] = dict(items)
         return data

@@ -96,7 +96,7 @@ class DataSource:
             headers = self.headers
             for i in range(0, len(self.headers) - len(entries[0])):
                 headers.append(f"{i:3f}")
-            items = {(k, v) for k, v in zip(self.headers, entries)
+            items = {(k, v) for k, v in zip(self.headers, entries)}
             data[name] = dict(items)
         return data
 

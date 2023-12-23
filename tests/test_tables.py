@@ -205,5 +205,6 @@ def test_text():
 
 
 def test_as_dict():
-    ds = tables.RollTable([fixture_metadata + fixture_source]).datasources[0].as_dict()
-    assert ds['Option 1']['Header 1'] == 'Option 1'
+    source = tables.RollTable([fixture_no_descriptions]).datasources[0]
+    ds = source.as_dict()
+    assert ds['option 1']['choice'] == 'choice 1'

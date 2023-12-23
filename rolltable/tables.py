@@ -267,11 +267,11 @@ class RollTable:
         self._data = []
         for src in self._sources:
             if type(src) is str:
-                ds = DataSource(src, frequency=self._frequency)
+                src = [src]
+            for one_source in src:
+                ds = DataSource(one_source, frequency=self._frequency)
                 ds.load_source()
                 self._data.append(ds)
-            else:
-                self._data.append(src)
 
         # merge the headers
         self._headers = []

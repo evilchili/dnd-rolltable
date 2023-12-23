@@ -86,7 +86,19 @@ class DataSource:
             self.get_entries(option, rand=True) for option in self.random_frequencies(count)
         ]
 
-    def get_entries(self, option, rand: bool = True) -> list:
+    def as_dict(self) -> dict:
+        data = dict()
+        for name in self.data.keys():
+            entries = self.get_entries(name, rand=False)
+            headers = self.headers
+            for i in range(0, len(self.headers) - len(entries[0])):
+                headers.append(f"{i:3f}", i)
+            items = {(k, v) for k, v in zip(self.headers, self.get_entries(name))}
+            print(items)
+            data[name] = dict(items)
+        return data
+
+    def get_entries(self, option, rand: bool = False) -> list:
         """
         For a random item or each item in the specified option in the data source,
         return a flattened list of the option, the select item, and the item's value (if any).

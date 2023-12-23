@@ -202,3 +202,8 @@ def test_text():
     assert repr(tables.RollTable([fixture_one_choice]))
     assert repr(tables.RollTable([fixture_metadata + fixture_source]))
     assert repr(tables.RollTable([fixture_source]))
+
+
+def test_as_dict():
+    ds = tables.RollTable([fixture_metadata + fixture_source]).datasources[0].as_dict()
+    assert ds['Option 1']['Header 1'] == 'Option 1'

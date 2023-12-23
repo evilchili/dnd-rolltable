@@ -92,6 +92,7 @@ class DataSource:
         """
         data = dict()
         for name in self.data.keys():
+            print(name)
             entries = self.get_entries(name, rand=False)
             items = {(k, v) for k, v in zip(self.headers, entries)}
             data[name] = dict(items)

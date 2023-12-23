@@ -204,7 +204,14 @@ def test_text():
     assert repr(tables.RollTable([fixture_source]))
 
 
-def test_as_dict():
-    source = tables.RollTable([fixture_no_descriptions]).datasources[0]
-    ds = source.as_dict()
-    assert ds['option 1']['choice'] == 'choice 1'
+@pytest.mark.parametrize('table', [
+    tables.RollTable([fixture_no_options]),
+    tables.RollTable([fixture_one_choice]),
+    tables.RollTable([fixture_metadata + fixture_source]),
+    tables.RollTable([fixture_source]),
+    tables.RollTable([fixture_no_options]),
+    tables.RollTable([fixture_lists_and_dicts]),
+])
+def test_as_dict(table):
+    for src in table.datasources:
+        assert src.as_dict()

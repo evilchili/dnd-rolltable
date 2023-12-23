@@ -128,10 +128,7 @@ class DataSource:
                 ]
         else:
             # If the option is either a list or a string, just select it.
-            if rand:
-                choices = [random.choice(self.data[option])]
-            else:
-                choices = self.data[option]
+            choices = self.data[option]
 
         for choice in choices:
             # If the randomly-selected choice is a dict, choose a random item and return a list consisting
@@ -152,6 +149,7 @@ class DataSource:
             # otherwise, return a list consisting of option and choice
             flattened.append(choice)
         return flattened
+
 
 class RollTable:
     """

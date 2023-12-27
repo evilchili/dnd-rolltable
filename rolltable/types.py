@@ -130,7 +130,7 @@ class RollTable:
         for ds in self._data:
             self._headers += ds.headers
 
-        # identify which columsn to hide in the output by recording where a
+        # identify which columns to hide in the output by recording where a
         # None header appears
         self._header_excludes = []
         for i in range(len(self._headers)):

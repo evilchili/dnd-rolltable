@@ -51,13 +51,9 @@ def create(
     if output == OUTPUT_FORMATS.yaml:
         print(rt.as_yaml())
     elif output == OUTPUT_FORMATS.markdown:
-        print(rt.as_markdown)
+        print(rt.as_markdown())
     else:
-        rows = rt.rows if collapsed else rt.expanded_rows
-        table = Table(*rows[0], width=width)
-        for row in rows[1:]:
-            table.add_row(*row)
-        print(table)
+        print(rt.as_table(width=width, expanded=not collapsed))
 
 
 if __name__ == '__main__':

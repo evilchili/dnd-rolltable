@@ -4,6 +4,8 @@ from collections.abc import Iterable
 from typing import Optional, List, Union
 from random_sets.datasources import DataSource
 
+import rich.table
+
 
 class RollTable:
     """
@@ -39,16 +41,6 @@ class RollTable:
         self._header_excludes = None
         self._generated_values = None
         self._config()
-
-    def as_yaml(self, expanded=False) -> dict:
-        struct = {}
-        for row in self.rows[1:]:
-            struct[row[0]] = {}
-            # pad rows with empty cols as necessary
-            cols = row[1:] + [''] * (len(self.headers) - len(row[1:]))
-            for idx, col in enumerate(cols):
-                struct[row[0]][self.headers[idx] if idx < len(self.headers) else '_'] = col
-        return yaml.dump(struct, sort_keys=False)
 
     @property
     def datasources(self) -> List:
@@ -106,9 +98,25 @@ class RollTable:
             self._rows.append(self._column_filter([f'd{face+1}'] + row))
         return self._rows
 
-    @property
     def as_markdown(self) -> str:
         return Table(self.rows).markdown()
+
+    def as_yaml(self, expanded: bool = False) -> dict:
+        struct = {}
+        for row in self.rows[1:]:
+            struct[row[0]] = {}
+            # pad rows with empty cols as necessary
+            cols = row[1:] + [''] * (len(self.headers) - len(row[1:]))
+            for idx, col in enumerate(cols):
+                struct[row[0]][self.headers[idx] if idx < len(self.headers) else '_'] = col
+        return yaml.dump(struct, sort_keys=False)
+
+    def as_table(self, width: int = 120, expanded: bool = False) -> str:
+        rows = self.expanded_rows if expanded else self.rows
+        table = rich.table.Table(*rows[0], width=width)
+        for row in rows[1:]:
+            table.add_row(*row)
+        return table
 
     def _config(self):
         """

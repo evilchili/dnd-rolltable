@@ -2,7 +2,6 @@ from rolltable.types import RollTable
 import typer
 from enum import Enum
 from rich import print
-from rich.table import Table
 from pathlib import Path
 from typing import List
 
@@ -16,8 +15,35 @@ class OUTPUT_FORMATS(Enum):
     markdown = 'markdown'
 
 
-@app.command("roll-table")
-def create(
+@app.command("psychadelic-effects")
+def psycheffects():
+    """
+    Generate a roll table of psychadelic effects.
+    """
+    rt = RollTable([(Path(__file__).parent / 'sources' / 'psychadelic_effects.yaml').read_text()])
+    print(rt.as_table())
+
+
+@app.command("trinkets")
+def trinkets():
+    """
+    Generate a roll table of random junk.
+    """
+    rt = RollTable([(Path(__file__).parent / 'sources' / 'trinkets.yaml').read_text()])
+    print(rt.as_table())
+
+
+@app.command("wild-magic")
+def wildmagic():
+    """
+    Generate a wild magic surge table.
+    """
+    rt = RollTable([(Path(__file__).parent / 'sources' / 'wild_magic.yaml').read_text()])
+    print(rt.as_table())
+
+
+@app.command("custom")
+def custom(
     sources: List[Path] = typer.Argument(
         ...,
         help="Path to one or more yaml-formatted source file."),
@@ -43,7 +69,7 @@ def create(
     )
 ):
     """
-    CLI for creating roll tables.
+    Create roll tables from custom sources.
     """
 
     rt = RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die, hide_rolls=hide_rolls)

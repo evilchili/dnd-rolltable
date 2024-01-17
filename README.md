@@ -13,7 +13,7 @@ Clone the repo and install the virtual env:
 
 Invoke the CLI:
 ```
-% poetry run roll-table example.yaml
+% poetry run roll-table custom example.yaml
 ┏━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
 ┃ Roll    ┃ Rarity   ┃ Color    ┃ Notes              ┃
 ┡━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩

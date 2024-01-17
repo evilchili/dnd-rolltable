@@ -56,14 +56,27 @@ class RollTable:
 
     @property
     def _values(self) -> List:
+        """
+            For each data source, select N random values, where N is the size of the die.
+            we then zip those random values so that each member of the generated list
+            contains one value from each data source. So if _data is:
+
+            [
+               ['axe', 'shortsword', 'dagger'],
+               ['fire', 'ice', 'poison'],
+            ]
+
+            and the die is 2, the resulting generated values might be:
+
+            [
+              ['axe', 'fire'],
+              ['dagger', 'ice'],
+            ]
+        """
         if not self._generated_values:
-            ds_values = [t.random_values(self.die) for t in self._data]
-            self._generated_values = []
-            for face in range(self._die):
-                value = []
-                for index, ds in enumerate(ds_values):
-                    value += ds_values[index][face]
-                self._generated_values.append(value)
+            self._generated_values = list(zip(*[
+                t.random_values(self.die) for t in self._data
+            ]))
         return self._generated_values
 
     @property

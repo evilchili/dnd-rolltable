@@ -33,9 +33,9 @@ class RollTable:
                  die: Optional[int] = 20, hide_rolls: bool = False) -> None:
         self._sources = sources
         self._frequency = frequency
-        self._die = die
-        self._hide_rolls = hide_rolls
-        self._data = None
+        self.die = die
+        self.hide_rolls = hide_rolls
+        self.data = None
         self._rows = None
         self._headers = None
         self._header_excludes = None
@@ -45,10 +45,6 @@ class RollTable:
     @property
     def datasources(self) -> List:
         return self._data
-
-    @property
-    def die(self) -> int:
-        return self._die
 
     @property
     def headers(self) -> List:
@@ -90,7 +86,7 @@ class RollTable:
         offset = 0
         self._rows = [self._column_filter(['Roll'] + self.headers)]
 
-        for face in range(self._die):
+        for face in range(self.die):
             row = self._values[face]
             if not lastrow:
                 lastrow = row
@@ -106,7 +102,7 @@ class RollTable:
     @property
     def expanded_rows(self) -> List:
         self._rows = [self._column_filter(['Roll'] + self.headers)]
-        for face in range(self._die):
+        for face in range(self.die):
             row = self._values[face]
             self._rows.append(self._column_filter([f'd{face+1}'] + row))
         return self._rows
@@ -167,7 +163,7 @@ class RollTable:
         # pad the row with empty columns if there are more headers than columns
         cols = cols + [''] * (1 + len(self.headers) - len(row))
         # strip the leading column if we're hiding the dice rolls
-        return cols[1:] if self._hide_rolls else cols
+        return cols[1:] if self.hide_rolls else cols
 
     def _flatten(self, obj: List) -> List:
         for member in obj:

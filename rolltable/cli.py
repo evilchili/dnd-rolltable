@@ -1,4 +1,5 @@
 from rolltable.types import RollTable
+from rolltable import tables
 import typer
 from enum import Enum
 from rich import print
@@ -13,43 +14,6 @@ class OUTPUT_FORMATS(Enum):
     text = 'text'
     yaml = 'yaml'
     markdown = 'markdown'
-
-
-@app.command("psychadelic-effects")
-def psycheffects():
-    """
-    Generate a roll table of psychadelic effects.
-    """
-    rt = RollTable([(Path(__file__).parent / 'sources' / 'psychadelic_effects.yaml').read_text()])
-    print(rt.as_table())
-
-
-@app.command("trinkets")
-def trinkets():
-    """
-    Generate a roll table of random junk.
-    """
-    rt = RollTable([(Path(__file__).parent / 'sources' / 'trinkets.yaml').read_text()])
-    print(rt.as_table())
-
-
-@app.command("wild-magic")
-def wildmagic():
-    """
-    Generate a wild magic surge table.
-    """
-    rt = RollTable([(Path(__file__).parent / 'sources' / 'wild_magic.yaml').read_text()])
-    print(rt.as_table())
-
-
-@app.command("spells")
-def spells():
-    """
-    Generate a random spell table.
-    """
-    rt = RollTable([(Path(__file__).parent / 'sources' / 'spells.yaml').read_text()])
-    rt.set_headers('Level', 'Name', 'School', None, None, None, None, None)
-    print(rt.as_table())
 
 
 @app.command("custom")
@@ -90,6 +54,20 @@ def custom(
         print(rt.as_markdown())
     else:
         print(rt.as_table(width=width, expanded=not collapsed))
+
+
+def make_callback(roll_table_instance):
+    def inner():
+        print(roll_table_instance.as_table())
+    return inner
+
+
+# step through all the predfined tables and create a cli for each
+for name, table in tables.index.items():
+    help_text = name.replace('_', ' ').title()
+    app.command(name=name, help=f"Create a roll table of {help_text}")(
+        make_callback(table)
+    )
 
 
 if __name__ == '__main__':

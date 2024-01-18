@@ -131,6 +131,16 @@ class RollTable:
             table.add_row(*row)
         return table
 
+    def set_headers(self, *headers) -> None:
+        self._headers = list(headers)
+
+        # identify which columns to hide in the output by recording where a
+        # None header appears
+        self._header_excludes = []
+        for i in range(len(self._headers)):
+            if self.headers[i] is None:
+                self._header_excludes.append(i+1)
+
     def _config(self):
         """
         Parse data sources, generate headers, and create the column filters
@@ -147,16 +157,10 @@ class RollTable:
                 self._data.append(ds)
 
         # merge the headers
-        self._headers = []
+        headers = []
         for ds in self._data:
-            self._headers += ds.headers
-
-        # identify which columns to hide in the output by recording where a
-        # None header appears
-        self._header_excludes = []
-        for i in range(len(self._headers)):
-            if self.headers[i] is None:
-                self._header_excludes.append(i)
+            headers += ds.headers
+        self.set_headers(*headers)
 
     def _column_filter(self, row):
         cols = [col or '' for (pos, col) in enumerate(row) if pos not in self._header_excludes]

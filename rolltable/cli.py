@@ -42,6 +42,16 @@ def wildmagic():
     print(rt.as_table())
 
 
+@app.command("spells")
+def spells():
+    """
+    Generate a random spell table.
+    """
+    rt = RollTable([(Path(__file__).parent / 'sources' / 'spells.yaml').read_text()])
+    rt.set_headers('Level', 'Name', 'School', None, None, None, None, None)
+    print(rt.as_table())
+
+
 @app.command("custom")
 def custom(
     sources: List[Path] = typer.Argument(

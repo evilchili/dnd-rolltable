@@ -19,4 +19,9 @@ index = dict(
 
 
 def __getattr__(name: str) -> Any:
-    return index[name]
+    try:
+        return index[name]
+    except KeyError:
+        if name in globals():
+            return globals()[name]
+        raise AttributeError(f"No such attribute: {name}")

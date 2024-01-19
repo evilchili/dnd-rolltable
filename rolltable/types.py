@@ -107,6 +107,9 @@ class RollTable:
             self._rows.append(self._column_filter([f'd{face+1}'] + row))
         return self._rows
 
+    def reset(self) -> None:
+        self._generated_values = None
+
     def as_markdown(self) -> str:
         return Table(self.rows).markdown()
 

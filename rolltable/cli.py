@@ -1,3 +1,4 @@
+from collections import defaultdict
 from rolltable.types import RollTable
 from rolltable import tables
 import typer
@@ -8,6 +9,10 @@ from typing import List
 
 
 app = typer.Typer()
+app_state = defaultdict(
+    str,
+    options=defaultdict(str),
+)
 
 
 class OUTPUT_FORMATS(Enum):
@@ -16,49 +21,74 @@ class OUTPUT_FORMATS(Enum):
     markdown = 'markdown'
 
 
-@app.command("custom")
-def custom(
-    sources: List[Path] = typer.Argument(
-        ...,
-        help="Path to one or more yaml-formatted source file."),
+@app.callback()
+def main(
     frequency: str = typer.Option(
         'default',
-        help='use the specified frequency from the source file'),
+        help='use the specified frequency from the source file'
+    ),
     die: int = typer.Option(
         20,
-        help='The size of the die for which to create a table'),
+        help='The size of the die for which to create a table'
+    ),
     hide_rolls: bool = typer.Option(
         False,
         help='If True, do not show the Roll column.',
     ),
     collapsed: bool = typer.Option(
         True,
-        help='If True, collapse multiple die values with the same option.'),
+        help='If True, collapse multiple die values with the same option.'
+    ),
     width: int = typer.Option(
         120,
-        help='Width of the table.'),
+        help='Width of the table.'
+    ),
     output: OUTPUT_FORMATS = typer.Option(
         'text',
         help='The output format to use.',
     )
 ):
+    app_state['options'] = {
+        'frequency': frequency,
+        'die': die,
+        'hide_rolls': hide_rolls,
+    }
+    app_state['collapsed'] = collapsed
+    app_state['width'] = width
+    app_state['output'] = output
+
+
+@app.command("custom")
+def custom(
+    sources: List[Path] = typer.Argument(
+        ...,
+        help="Path to one or more yaml-formatted source file."),
+):
     """
     Create roll tables from custom sources.
     """
 
-    rt = RollTable([Path(s).read_text() for s in sources], frequency=frequency, die=die, hide_rolls=hide_rolls)
+    rt = RollTable([Path(s).read_text() for s in sources], **app_state['options'])
+    print_table(rt)
 
-    if output == OUTPUT_FORMATS.yaml:
-        print(rt.as_yaml())
-    elif output == OUTPUT_FORMATS.markdown:
-        print(rt.as_markdown())
+
+def print_table(table):
+    if app_state['output'] == OUTPUT_FORMATS.yaml:
+        print(table.as_yaml())
+    elif app_state['output'] == OUTPUT_FORMATS.markdown:
+        print(table.as_markdown())
     else:
-        print(rt.as_table(width=width, expanded=not collapsed))
+        print(table.as_table(
+            width=app_state['width'],
+            expanded=not app_state['collapsed']
+        ))
 
 
 def make_callback(roll_table_instance):
     def inner():
-        print(roll_table_instance.as_table())
+        roll_table_instance.frequency = app_state['options']['frequency']
+        roll_table_instance.die = app_state['options']['die']
+        print_table(roll_table_instance)
     return inner
 
 

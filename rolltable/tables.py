@@ -14,7 +14,8 @@ index = dict(
     psychadelic_effects=from_sources(['psychadelic_effects.yaml']),
     trinkets=from_sources(['trinkets.yaml']),
     wild_magic=from_sources(['wild_magic.yaml']),
-    spells=from_sources(['spells.yaml'])
+    spells=from_sources(['spells.yaml']),
+    encounters=from_sources(['encounters.yaml']),
 )
 
 

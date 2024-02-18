@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+
+SRC="rolltable/ tests/"
+
+poetry run isort $SRC
+poetry run autoflake $SRC
+poetry run black $SRC
